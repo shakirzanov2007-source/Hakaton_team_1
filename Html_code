@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дрон Сервис Фонарей</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(103, 232, 249, 0.6); }
+            50% { box-shadow: 0 0 35px rgba(103, 232, 249, 0.9); }
+        }
+        .drone-glow {
+            animation: pulse-glow 2s infinite;
+        }
+        @keyframes spin-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .spin-slow {
+            animation: spin-slow 4s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+    <header class="fixed top-0 left-0 right-0 z-50 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 shadow-2xl">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-4xl">🛸</span>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">Дрон Сервис Фонарей</h1>
+            </div>
+            <div class="flex gap-3">
+                <button id="btnStart" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-emerald-500/50">Запустить симуляцию</button>
+                <button id="btnPause" class="px-6 py-2 bg-orange-600 hover:bg-orange-500 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-orange-500/50">Пауза</button>
+                <button id="btnReset" class="px-6 py-2 bg-red-600 hover:bg-red-500 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-red-500/50">Сброс</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-28 pb-12 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col lg:flex-row gap-6">
+                <div class="flex-1 lg:w-[70%]">
+                    <div id="map" class="relative w-[650px] h-[420px] border-4 border-zinc-700 rounded-3xl overflow-hidden shadow-2xl bg-cover bg-center" style="background-image: url('https://picsum.photos/id/1015/650/420');">
+                        <div id="drone" class="absolute text-5xl drop-shadow-[0_0_15px_#67e8f9] transition-all duration-1000 drone-glow" style="left: 535px; top: 335px;">🚁</div>
+                    </div>
+                </div>
+
+                <div class="w-full lg:w-[380px] bg-zinc-900/80 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl p-6">
+                    <h2 class="text-xl font-bold mb-4 text-cyan-400">Состояние фонарей</h2>
+                    <div class="overflow-auto max-h-[380px]">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b border-zinc-700">
+                                    <th class="py-2 text-left font-semibold text-zinc-400">№ точки</th>
+                                    <th class="py-2 text-left font-semibold text-zinc-400">Заряды</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row gap-6 mt-6">
+                <div class="flex-1 bg-zinc-900/80 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl p-6">
+                    <div class="flex items-center gap-4">
+                        <span class="text-6xl">🚁</span>
+                        <div>
+                            <p class="text-sm text-zinc-400 mb-1">Состояние дрона</p>
+                            <p id="droneStatus" class="text-2xl font-bold text-emerald-400">На базе</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1 bg-zinc-900/80 backdrop-blur-xl border border-zinc-700 rounded-2xl shadow-2xl p-6">
+                    <p class="text-sm text-zinc-400 mb-1">Работающие фонари</p>
+                    <p id="statsWorking" class="text-4xl font-bold text-emerald-400">10 из 10</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-8 text-zinc-600 text-sm">
+                Симуляция • 2026
+            </div>
+        </div>
+    </main>
+
+    <div id="tooltip" class="fixed hidden bg-zinc-800 border border-cyan-500 text-white px-3 py-2 rounded-lg text-sm shadow-2xl pointer-events-none z-50"></div>
+
+    <script>
+        const positions = [
+            { id: 1, left: 85, top: 65 },
+            { id: 2, left: 210, top: 95 },
+            { id: 3, left: 340, top: 55 },
+            { id: 4, left: 480, top: 130 },
+            { id: 5, left: 110, top: 190 },
+            { id: 6, left: 390, top: 215 },
+            { id: 7, left: 70, top: 295 },
+            { id: 8, left: 245, top: 330 },
+            { id: 9, left: 465, top: 285 },
+            { id: 10, left: 520, top: 165 }
+        ];
+
+        let points = [];
+        let droneState = { status: 'base', targetId: null, isBusy: false };
+        let intervals = { decay: null, drone: null };
+        let isRunning = false;
+
+        const map = document.getElementById('map');
+        const drone = document.getElementById('drone');
+        const droneStatusEl = document.getElementById('droneStatus');
+        const statsWorkingEl = document.getElementById('statsWorking');
+        const tableBody = document.getElementById('tableBody');
+        const tooltip = document.getElementById('tooltip');
+
+        function initPoints() {
+            points = positions.map(pos => ({
+                ...pos,
+                charges: Math.floor(Math.random() * 3) + 3,
+                status: 'green',
+                element: null
+            }));
+            
+            const redIndices = [];
+            while (redIndices.length < 3) {
+                const idx = Math.floor(Math.random() * 10);
+                if (!redIndices.includes(idx)) redIndices.push(idx);
+            }
+            redIndices.forEach(idx => {
+                points[idx].charges = 2;
+                points[idx].status = 'red';
+            });
+
+            map.querySelectorAll('.point').forEach(el => el.remove());
+            
+            points.forEach(point => {
+                const el = document.createElement('div');
+                el.className = `point absolute w-7 h-7 rounded-full flex items-center justify-center font-bold text-white text-sm border-4 shadow-xl transition-all duration-300 hover:scale-125 cursor-pointer ${
+                    point.status === 'red' ? 'bg-red-600 border-red-400' : 'bg-emerald-500 border-emerald-400'
+                }`;
+                el.style.left = point.left + 'px';
+                el.style.top = point.top + 'px';
+                el.textContent = point.id;
+                
+                el.addEventListener('mouseenter', (e) => {
+                    tooltip.textContent = `Точка ${point.id} • Заряд: ${point.charges}/6`;
+                    tooltip.style.left = (e.pageX + 15) + 'px';
+                    tooltip.style.top = (e.pageY + 15) + 'px';
+                    tooltip.classList.remove('hidden');
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    tooltip.classList.add('hidden');
+                });
+                
+                map.appendChild(el);
+                point.element = el;
+            });
+
+            drone.style.left = '535px';
+            drone.style.top = '335px';
+            droneState = { status: 'base', targetId: null, isBusy: false };
+            updateUI();
+        }
+
+        function updateUI() {
+            tableBody.innerHTML = points.map(point => `
+                <tr class="${point.status === 'red' ? 'bg-red-900/30' : ''}">
+                    <td class="py-3 font-semibold">${point.id}</td>
+                    <td class="py-3">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold ${point.charges <= 2 ? 'text-red-400' : 'text-emerald-400'}">${point.charges}</span>
+                            <div class="flex-1 h-2 bg-zinc-700 rounded-full overflow-hidden">
+                                <div class="h-full transition-all duration-500 ${point.charges <= 2 ? 'bg-red-500' : 'bg-emerald-500'}" style="width: ${(point.charges / 6) * 100}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+
+            points.forEach(point => {
+                if (point.element) {
+                    point.element.className = `point absolute w-7 h-7 rounded-full flex items-center justify-center font-bold text-white text-sm border-4 shadow-xl transition-all duration-300 hover:scale-125 cursor-pointer ${
+                        point.status === 'red' ? 'bg-red-600 border-red-400' : 'bg-emerald-500 border-emerald-400'
+                    }`;
+                }
+            });
+
+            const workingCount = points.filter(p => p.status === 'green').length;
+            statsWorkingEl.textContent = `${workingCount} из 10`;
+            statsWorkingEl.className = `text-4xl font-bold ${workingCount >= 8 ? 'text-emerald-400' : 'text-red-400'}`;
+        }
+
+        function decayCharges() {
+            const greenPoints = points.filter(p => p.status === 'green');
+            if (greenPoints.length === 0) return;
+
+            const count = Math.floor(Math.random() * 2) + 1;
+            for (let i = 0; i < count && greenPoints.length > 0; i++) {
+                const idx = Math.floor(Math.random() * greenPoints.length);
+                const point = greenPoints.splice(idx, 1)[0];
+                point.charges = Math.max(0, point.charges - 1);
+                if (point.charges <= 2) {
+                    point.status = 'red';
+                }
+            }
+
+            updateUI();
+            checkDrone();
+        }
+
+        function checkDrone() {
+            if (droneState.isBusy) return;
+
+            const redPoints = points.filter(p => p.status === 'red');
+            if (redPoints.length > 0) {
+                const target = redPoints[0];
+                flyToPoint(target);
+            }
+        }
+
+        function flyToPoint(target) {
+            droneState.isBusy = true;
+            droneState.targetId = target.id;
+            droneState.status = 'flying';
+            droneStatusEl.textContent = `В полёте к №${target.id}`;
+            droneStatusEl.className = 'text-2xl font-bold text-orange-400';
+            
+            drone.classList.add('spin-slow');
+            drone.style.left = (target.left - 7) + 'px';
+            drone.style.top = (target.top - 7) + 'px';
+
+            setTimeout(() => {
+                droneState.status = 'charging';
+                droneStatusEl.textContent = `Зарядка точки №${target.id}`;
+                droneStatusEl.className = 'text-2xl font-bold text-cyan-400';
+                drone.classList.remove('spin-slow');
+
+                setTimeout(() => {
+                    target.charges = 6;
+                    target.status = 'green';
+                    updateUI();
+
+                    droneState.status = 'returning';
+                    droneStatusEl.textContent = 'Возврат на базу';
+                    droneStatusEl.className = 'text-2xl font-bold text-blue-400';
+                    
+                    drone.style.transitionDuration = '1.8s';
+                    drone.style.left = '535px';
+                    drone.style.top = '335px';
+
+                    setTimeout(() => {
+                        drone.style.transitionDuration = '1s';
+                        droneState.status = 'base';
+                        droneState.targetId = null;
+                        droneState.isBusy = false;
+                        droneStatusEl.textContent = 'На базе';
+                        droneStatusEl.className = 'text-2xl font-bold text-emerald-400';
+
+                        const greenPoints = points.filter(p => p.status === 'green' && p.charges > 2);
+                        if (greenPoints.length > 0) {
+                            const randomPoint = greenPoints[Math.floor(Math.random() * greenPoints.length)];
+                            randomPoint.charges = 2;
+                            randomPoint.status = 'red';
+                            updateUI();
+                        }
+
+                        checkDrone();
+                    }, 1800);
+                }, 1600);
+            }, 2200);
+        }
+
+        function startSimulation() {
+            if (isRunning) return;
+            isRunning = true;
+
+            intervals.decay = setInterval(decayCharges, 4500);
+            checkDrone();
+        }
+
+        function pauseSimulation() {
+            isRunning = false;
+            clearInterval(intervals.decay);
+        }
+
+        function resetSimulation() {
+            pauseSimulation();
+            initPoints();
+        }
+
+        document.getElementById('btnStart').addEventListener('click', startSimulation);
+        document.getElementById('btnPause').addEventListener('click', pauseSimulation);
+        document.getElementById('btnReset').addEventListener('click', resetSimulation);
+
+        initPoints();
+        startSimulation();
+    </script>
+</body>
+</html>
