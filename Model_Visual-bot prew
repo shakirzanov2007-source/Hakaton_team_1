@@ -1,0 +1,547 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -752,
+        0
+      ],
+      "id": "2b83a31e-cfb4-4235-9362-f05789db86b6",
+      "name": "Telegram Trigger",
+      "webhookId": "e97c0b89-8cf8-44c2-a5c1-29a4afcfac8d",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3ce883f5-982a-4c51-9422-7afddd49c31c"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "af49ca08-8498-45ae-8f8f-b82105edfda3",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/start",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "8905dac3-ca8c-4572-8f52-d959275ee22e",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/drons",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2a61ee0f-d6c2-4084-bda5-5cd8aaae0475",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/light",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9c1583a8-cdb6-48be-9e16-2d3ac23f7aa1",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        0
+      ],
+      "id": "6a707a72-8b33-476b-889c-0b6e51aee09e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "= Доступные команды:  \n/drons — список дронов и статус  \n/light — список фонарей и заряд  \n/update - обновление данных",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        416,
+        -192
+      ],
+      "id": "85e1a6e4-a76a-45bf-bf4b-8ab6690f49f2",
+      "name": "Send a text message",
+      "webhookId": "e72bb16a-070b-4697-90c3-deec3443b372",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "=Добро пожаловать! \nЧтобы узнать список доступных команд напишите \n/help",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        432,
+        -16
+      ],
+      "id": "259aeeab-8e8e-42f3-ba7b-df7b31ea13d4",
+      "name": "Send a text message1",
+      "webhookId": "72bdb3b9-7ba2-4253-9f60-5c3546fa39e3",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Дрон_1: Готов к доставке\nДрон_2: Пополняет фонарь под номером: 1",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        736,
+        80
+      ],
+      "id": "d0949f8d-c217-4362-acf4-d25a62471b4e",
+      "name": "Send a text message2",
+      "webhookId": "6201c4b7-ab33-4431-ac62-92d14fdea549",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Ваши Фонари:\nФонарь-1: заряд пополняется \nФонарь-2: заряд 4/6\nФонарь-3: заряд 6/6\nФонарь-4: заряд 5/6",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        176
+      ],
+      "id": "03cd17be-8232-4f01-b90c-4e5aa30b0410",
+      "name": "Send a text message3",
+      "webhookId": "50e27906-cc67-4488-982f-ef3ec593ecf5",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Неверная команда!!!",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -304,
+        368
+      ],
+      "id": "837c5e96-3366-4416-b9bb-aea3828497d6",
+      "name": "Send a text message4",
+      "webhookId": "46de3d0f-81b0-42f3-9896-9f4a7d3de195",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "Данные обновлены",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        928,
+        288
+      ],
+      "id": "b6dee3ce-ab4a-453d-83d2-11e5950a4ce2",
+      "name": "Send a text message5",
+      "webhookId": "21d48bdf-6667-41c7-a5f5-52cd11df76c5",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Ваши Фонари:\nФонарь-1: заряд 5/6 \nФонарь-2: заряд 4/6\nФонарь-3: заряд 6/6\nФонарь-4: заряд 5/6",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1072,
+        272
+      ],
+      "id": "a07d19ab-8466-42f0-b618-20d16811cdec",
+      "name": "Send a text message6",
+      "webhookId": "50e27906-cc67-4488-982f-ef3ec593ecf5",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        320,
+        336
+      ],
+      "id": "45738762-afb8-4557-aea0-f56d8d258e44",
+      "name": "Wait",
+      "webhookId": "3244cdce-ef33-47e1-82bc-ee644966f8eb"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "=Дрон_1: Готов к доставке\nДрон_2: Возвращается на базу",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        288
+      ],
+      "id": "e60c8dee-b7c3-47c8-a1e9-35984527a73c",
+      "name": "Send a text message7",
+      "webhookId": "6201c4b7-ab33-4431-ac62-92d14fdea549",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=Обнавляю данные....",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        224
+      ],
+      "id": "915fbd19-2eb9-46e6-b122-0552a74fce03",
+      "name": "Send a text message8",
+      "webhookId": "6201c4b7-ab33-4431-ac62-92d14fdea549",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "messageId": "={{ $('Send a text message8').item.json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        416
+      ],
+      "id": "35669612-d6b9-41b9-8c99-ddb2a8a69ff3",
+      "name": "Delete a chat message",
+      "webhookId": "d4fb5a5a-2601-45f8-9602-16cdfc6c6061",
+      "credentials": {
+        "telegramApi": {
+          "id": "lgXdqn8uWi3GYefR",
+          "name": "Telegram account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        224,
+        224
+      ],
+      "typeVersion": 1,
+      "id": "a6019153-cb28-4039-9607-1b8297bb239e",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message8",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message5": {
+      "main": [
+        [
+          {
+            "node": "Send a text message6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message6": {
+      "main": [
+        [
+          {
+            "node": "Send a text message7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message8": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a chat message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "03c5feda-7927-4cf8-aaa4-3021aae81190",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "44ca9e181d71305792d88a607340ab940e7840294f5c90c4d3c5880b03660d58"
+  },
+  "id": "GIDytxuevDBasBgo",
+  "tags": []
+}
